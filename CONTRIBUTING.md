@@ -88,7 +88,6 @@ skills/qt-my-topic/
     lint-scripts/                  #   Linter or validation scripts.
       my_linter.py
   platforms/                       # Optional. Platform-specific variants.
-    copilot.prompt.md              #   GitHub Copilot agent version.
     windsurf.md                    #   Compact version for Windsurf.
   agents/                          # Optional. Platform metadata files.
     openai.yaml                    #   Codex CLI skill metadata.
@@ -242,8 +241,9 @@ references/
 
 **How references work across platforms:**
 
-- **Claude Code** and **Codex CLI** support references natively.
-  The AI loads them on demand when it needs the detail.
+- **Claude Code**, **Codex CLI**, and **GitHub Copilot** support
+  references natively. The AI loads them on demand when it needs
+  the detail.
 - **Cursor** can pull in files using `@filename` syntax.
 - **Other platforms** cannot access separate files. This is why
   the compact platform variants exist (see
@@ -344,16 +344,16 @@ consume skills:
 
 | Tier | Platforms | How they work |
 |------|-----------|---------------|
-| **1** | Claude Code, Codex CLI | Read full skill directories with `SKILL.md` + `references/` + `scripts/`. Your skill works as-is. |
+| **1** | Claude Code, Codex CLI, GitHub Copilot | Read full skill directories with `SKILL.md` + `references/` + `scripts/`. Your skill works as-is. |
 | **2** | Gemini CLI, Cursor | Read a single entry file but can import other files using `@file` syntax. Need a thin wrapper. |
-| **3** | GitHub Copilot, Windsurf, Amazon Q, JetBrains AI | Need everything in one self-contained file. Need a condensed variant. |
+| **3** | Windsurf, Amazon Q, JetBrains AI | Need everything in one self-contained file. Need a condensed variant. |
 
 Here is what that means in practice:
 
 
 ### Tier 1 -- Full skill directories
 
-**Platforms:** Claude Code, Codex CLI
+**Platforms:** Claude Code, Codex CLI, GitHub Copilot
 
 These platforms understand the full directory structure natively.
 Your `SKILL.md` with `references/` and `scripts/` works without
@@ -364,6 +364,14 @@ The install script for this repository copies (or symlinks) each
 skill into `~/.claude/skills/` so that Claude Code can find it.
 Once installed, Claude Code reads `SKILL.md` when the skill is
 invoked and follows links to reference files on demand.
+
+**GitHub Copilot** auto-discovers skill directories from any of
+`.github/skills/`, `.claude/skills/`, `.agents/skills/` (project)
+or `~/.copilot/skills/`, `~/.agents/skills/` (personal). Existing
+Claude Code installations work unchanged -- a skill installed for
+Claude Code is automatically picked up by Copilot. Skills can also
+be installed via `gh skill install <owner>/<repo> <skill-name>`
+(preview).
 
 **Codex CLI** uses a nearly identical model, loading skills from
 a `skills/` directory (see the
@@ -427,14 +435,13 @@ Review QML files using the Qt QML review skill guidelines.
 
 ### Tier 3 -- Self-contained compact file
 
-**Platforms:** GitHub Copilot, Windsurf, Amazon Q, JetBrains AI
+**Platforms:** Windsurf, Amazon Q, JetBrains AI
 
 These platforms need everything in a single markdown file and
 cannot reference external files. Some have strict size limits:
 
 | Platform | Size limit | Notes |
 |----------|-----------|-------|
-| **GitHub Copilot** | 4,000 chars (code review), 30,000 chars (agents) | Two different limits depending on feature |
 | **Windsurf** | 6,000 chars per rule, 12,000 chars total | Hardest constraint -- silently drops rules that exceed the limit |
 | **Amazon Q** | Not documented | All rules always load; no conditional activation |
 | **JetBrains AI** | Not documented | Activation mode is configured in the IDE, not in the file |
@@ -447,7 +454,6 @@ that fit within the size constraints.
 
 ```
 platforms/
-  copilot.prompt.md        # For GitHub Copilot (max 30K chars)
   windsurf.md              # Compact version (max 6K chars)
 ```
 
@@ -475,8 +481,6 @@ might add, all optional:
 | File | Platform | Format | Purpose |
 |------|----------|--------|---------|
 | `agents/openai.yaml` | Codex CLI | YAML | Implicit invocation config, MCP dependencies |
-| `platforms/copilot.prompt.md` | GitHub Copilot | MD + YAML frontmatter | Self-contained agent prompt (max 30K chars) |
-| `platforms/copilot-review.md` | GitHub Copilot | MD | Code review instructions (max 4K chars) |
 | `platforms/cursor-rule.md` | Cursor | MD + YAML frontmatter | Rule with `@file` imports and `globs` |
 | `platforms/windsurf.md` | Windsurf | MD + YAML frontmatter | Compact rule (max 6K chars) |
 | `platforms/amazonq.md` | Amazon Q | Plain MD | Self-contained rule, no frontmatter |
@@ -584,7 +588,6 @@ item applies to every skill -- use your judgment.
 ### Optional platform support
 
 - [ ] `agents/openai.yaml` for Codex CLI
-- [ ] `platforms/copilot.prompt.md` (under 30K chars)
 - [ ] `platforms/windsurf.md` (under 6K chars)
 - [ ] Other platform variants as needed
 
@@ -597,7 +600,7 @@ item applies to every skill -- use your judgment.
   what you have in mind. We are happy to give feedback before
   you start writing.
 - **Stuck on platform-specific details:** The platform
-  comparison in this guide is current as of April 2026. If you
+  comparison in this guide is current as of May 2026. If you
   find that something has changed, please let us know so we can
   update the guide.
 - **Want to contribute but not sure where to start:** Look at

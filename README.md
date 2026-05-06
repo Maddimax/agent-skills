@@ -11,10 +11,10 @@ Gemini, and GPT model families.
 There is no settled industry standard for AI skill packaging.
 Each platform has its own conventions. Our canonical format
 uses `SKILL.md` with YAML frontmatter in a directory-based
-structure — this works natively on Claude Code and Codex CLI,
-and can be adapted to other platforms through condensed
-variants. See [CONTRIBUTING.md](CONTRIBUTING.md) for the full
-cross-platform story.
+structure — this works natively on Claude Code, Codex CLI,
+and GitHub Copilot, and can be adapted to other platforms
+through condensed variants. See [CONTRIBUTING.md](CONTRIBUTING.md)
+for the full cross-platform story.
 
 > These agentic development skills use AI and can make mistakes.
 > Always double-check the output carefully.
@@ -135,13 +135,14 @@ ways:
 | **Claude Code CLI** | `~/.claude/skills/` | SKILL.md + references (native) | Full directory model with progressive loading |
 | **Codex CLI** | `~/.codex/skills/` | SKILL.md + references (native) | Full directory model; registered in `~/.codex/config.toml` |
 | **Gemini CLI** | Extension `skills/` | SKILL.md + references (native) | Installed via `gemini extensions install`; `@file.md` imports |
-| **GitHub Copilot** | `.github/agents/` | Markdown agent profiles | Self-contained; also installable as plugin via `.claude-plugin/` |
+| **GitHub Copilot** | `.github/skills/` or `.claude/skills/` (project), `~/.copilot/skills/` (personal) | SKILL.md + references (native) | Auto-discovered across Copilot CLI, coding agent, and VS Code; existing `.claude/skills/` setups Just Work |
 
 ### When platform-specific variants are needed
 
 Most skills work across tools without changes. When a skill
 needs to reach platforms that cannot read multi-file directories
-(e.g. Copilot), create variants in a `platforms/` directory:
+(e.g. Windsurf, Amazon Q), create variants in a `platforms/`
+directory:
 
 ```
 skills/qt-qml-review/
@@ -150,7 +151,7 @@ skills/qt-qml-review/
 │   ├── qml-lint-rules.md
 │   └── qml-review-checklist.md
 └── platforms/                     # Platform-specific variants
-    └── copilot.prompt.md          #   Self-contained Copilot agent
+    └── windsurf.md                #   Self-contained compact variant
 ```
 
 The `platforms/` directory is a convention for this repository.
@@ -204,20 +205,28 @@ Restart Codex after adding skills.
 > in your project root.
 
 ### GitHub Copilot CLI
-Register as a marketplace first, then install by name:
 
-```
-copilot plugin marketplace add TheQtCompanyRnD/agent-skills
-copilot plugin install qt-development-skills@qt-skills-and-tools
-```
-
-Or copy platform variants into your repository:
+Copilot natively reads the same `SKILL.md` directory format as
+Claude Code. Install individual skills using GitHub CLI (preview):
 
 ```bash
-# As a custom agent (invoked with @qt-qml-review in chat)
-cp skills/qt-qml-review/platforms/copilot.prompt.md \
-   .github/agents/qt-qml-review.agent.md
+gh skill install TheQtCompanyRnD/agent-skills qt-qml-review
 ```
+
+Or copy/symlink the skill into one of Copilot's discovery paths:
+
+```bash
+# User-wide (available in any project)
+cp -r skills/qt-qml-review ~/.copilot/skills/qt-qml-review
+
+# Or scoped to a specific project
+cp -r skills/qt-qml-review .github/skills/qt-qml-review
+```
+
+Copilot also auto-discovers skills installed for Claude Code
+under `.claude/skills/`, so a single install can serve both
+tools. Use `/skills list` inside Copilot CLI to confirm what
+loaded.
 
 ### VSCode Agents (Copilot and others)
 
